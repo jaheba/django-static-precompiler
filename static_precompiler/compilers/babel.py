@@ -1,3 +1,5 @@
+import os.path
+
 from static_precompiler import exceptions, utils
 
 from . import base
@@ -34,3 +36,25 @@ class Babel(base.BaseCompiler):
             raise exceptions.StaticCompilationError(errors)
 
         return out
+
+    def compile_source_to_file(self, source_path):
+        source = self.get_source(source_path)
+        output_path = self.get_full_output_path(source_path)
+        output_dir = os.path.dirname(output_path)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        args = [
+            self.executable,
+            '--source-maps', 'true',
+            '--out-file', output_path,
+            self.get_full_source_path(source_path)
+        ]
+
+        if self.modules is not None:
+            args.extend(["--modules", self.modules])
+
+        out, errors = utils.run_command(args)
+        if errors:
+            raise exceptions.StaticCompilationError(errors)

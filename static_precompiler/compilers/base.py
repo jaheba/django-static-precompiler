@@ -182,6 +182,11 @@ class BaseCompiler(object):
         compiled_file.write(output)
         compiled_file.close()
 
+    def compile_source_to_file(self, source_path):
+        compiled = self.compile_file(source_path)
+        compiled = self.postprocess(compiled, source_path)
+        self.write_output(compiled, source_path)
+
     def compile(self, source_path, from_management=False):
         """ Compile the given source path and return relative path to the compiled file.
             Raise ValueError is the source file type is not supported.
@@ -199,10 +204,7 @@ class BaseCompiler(object):
                 source_path, self.__class__.__name__
             ))
         if self.should_compile(source_path, from_management=from_management):
-
-            compiled = self.compile_file(source_path)
-            compiled = self.postprocess(compiled, source_path)
-            self.write_output(compiled, source_path)
+            self.compile_source_to_file(source_path)
 
             if self.supports_dependencies:
                 self.update_dependencies(source_path, self.find_dependencies(source_path))
